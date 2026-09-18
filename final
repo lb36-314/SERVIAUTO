@@ -1,0 +1,699 @@
+# SERVIAUTO
+
+## Automotive Repair Shop Management System
+
+SERVIAUTO is a cloud-based automotive repair management platform designed to take a vehicle from customer intake through diagnosis, parts identification, repair, invoicing, payment, and customer follow-up.
+
+---
+
+# SERVIAUTO WORKFLOW
+
+Customer
+→ Vehicle / VIN
+→ Vehicle Identification
+→ Vehicle Photo
+→ Inspection
+→ Diagnostic Scan
+→ DTC / Code Identification
+→ Diagnosis
+→ Parts Identification
+→ Repair Diagram
+→ Step-by-Step Repair Procedure
+→ Repair Videos
+→ Estimate
+→ Customer Approval
+→ Repair Order
+→ Technician
+→ Repair
+→ Invoice
+→ Payment
+→ Customer Follow-Up
+→ Business Reports
+
+---
+
+# CORE FEATURES
+
+## 1. CUSTOMER MANAGEMENT
+
+Store:
+
+- Customer name
+- Phone number
+- Email
+- Address
+- Notes
+- Customer history
+- Previous repair orders
+- Previous invoices
+- Vehicle history
+
+---
+
+# 2. VEHICLE MANAGEMENT
+
+Store:
+
+- VIN
+- Year
+- Make
+- Model
+- Trim
+- Engine
+- Mileage
+- License plate
+- Vehicle photos
+- Customer ownership
+- Vehicle history
+
+When a VIN or vehicle is entered, SERVIAUTO should identify the vehicle and display available vehicle information.
+
+---
+
+# 3. VEHICLE PHOTO
+
+When a vehicle is looked up by VIN or vehicle information, SERVIAUTO should display a picture of the identified vehicle when an authorized/licensed image source is available.
+
+The system should attempt to match:
+
+- Year
+- Make
+- Model
+- Trim
+- Body style
+
+Vehicle images must come from authorized or properly licensed sources.
+
+---
+
+# 4. VEHICLE INSPECTION
+
+Technicians should be able to perform digital inspections.
+
+Inspection features:
+
+- Pass
+- Fail
+- Needs attention
+- Measurements
+- Technician notes
+- Photos
+- Videos
+- Customer recommendations
+
+Inspection results should be attached to the vehicle and repair order.
+
+---
+
+# 5. DIAGNOSTIC SCANNING
+
+SERVIAUTO must provide a diagnostic workflow capable of receiving scan information.
+
+The system should support an integration layer for the:
+
+TOPDON ArtiDiag900
+
+The integration must use officially available TOPDON interfaces, APIs, exports, or authorized integration methods.
+
+Do not bypass proprietary TOPDON systems.
+
+Diagnostic information should be stored in Supabase.
+
+---
+
+# 6. DTC / CODE LOOKUP
+
+When a diagnostic code is entered or imported, SERVIAUTO should display:
+
+- Diagnostic trouble code
+- Code description
+- Vehicle applicability
+- Possible causes
+- Diagnostic tests
+- Recommended inspection points
+- Related components
+- Related parts
+- Repair information
+
+The system must distinguish between a possible diagnosis and a confirmed diagnosis.
+
+---
+
+# 7. DIAGNOSTIC-TO-PART WORKFLOW
+
+When a vehicle is scanned:
+
+1. Import the diagnostic code.
+2. Identify the vehicle.
+3. Match the code to the vehicle configuration.
+4. Display the code description.
+5. Display possible causes.
+6. Display recommended diagnostic tests.
+7. Identify related components.
+8. Identify applicable replacement parts.
+9. Display repair information.
+10. Display repair diagrams when licensed data is available.
+11. Display step-by-step repair instructions.
+12. Display relevant repair videos.
+13. Allow the technician to add findings to the repair order.
+
+---
+
+# 8. PART IDENTIFICATION
+
+SERVIAUTO should allow technicians to identify the part associated with a diagnostic problem.
+
+Part information may include:
+
+- Part name
+- Part number
+- OEM number
+- Manufacturer
+- Description
+- Vehicle compatibility
+- Price
+- Supplier
+- Availability
+- Related components
+
+Parts data must come from authorized supplier catalogs, APIs, feeds, or manually entered information.
+
+AutoZone can remain a manual lookup until an authorized integration is available.
+
+---
+
+# 9. VEHICLE REPAIR DIAGRAMS
+
+When technical data is available from an authorized source, SERVIAUTO should display the vehicle diagram for the component being repaired.
+
+Example:
+
+Diagnostic Code
+↓
+Component
+↓
+Vehicle Diagram
+↓
+Component Location
+↓
+Removal Procedure
+↓
+Installation Procedure
+
+The technician should be able to identify where the component is located on the vehicle.
+
+Copyrighted repair diagrams must only be displayed through properly licensed or authorized sources.
+
+---
+
+# 10. STEP-BY-STEP REPAIR PROCEDURES
+
+Repair information should be displayed in a numbered format.
+
+Example:
+
+### Brake Rotor Replacement
+
+1. Verify vehicle configuration.
+2. Secure vehicle on approved lifting equipment.
+3. Remove wheel.
+4. Inspect brake assembly.
+5. Remove brake caliper as specified by the repair procedure.
+6. Remove rotor retaining hardware if applicable.
+7. Remove rotor.
+8. Inspect hub and related components.
+9. Install replacement rotor.
+10. Reassemble brake system.
+11. Install wheel.
+12. Torque fasteners according to applicable specifications.
+13. Perform brake system verification.
+14. Road test when appropriate.
+
+Actual procedures and specifications must come from authorized technical information.
+
+---
+
+# 11. SEARCH BAR
+
+SERVIAUTO must include a technical-information search bar.
+
+Technicians should be able to search terms such as:
+
+- Brake
+- Alternator
+- Starter
+- P0420
+- Wheel bearing
+- Oil pressure
+- Fuel pump
+- Spark plug
+- Torque specification
+- Removal
+- Installation
+- Wiring
+- Sensor
+- Location
+
+Search results should be filtered by the selected vehicle whenever possible.
+
+---
+
+# 12. REPAIR VIDEOS
+
+SERVIAUTO should display relevant repair videos when available.
+
+Videos should be searchable by:
+
+- Vehicle
+- Year
+- Make
+- Model
+- Engine
+- Part
+- Diagnostic code
+- Repair procedure
+
+Videos should preferably be provided through authorized video APIs or permitted embeddable sources.
+
+The application should not download or redistribute copyrighted videos without permission.
+
+---
+
+# 13. ESTIMATES
+
+Create estimates containing:
+
+- Labor
+- Parts
+- Shop supplies
+- Taxes
+- Discounts
+- Additional services
+- Diagnostic fees
+- Total estimate
+
+The customer should be able to approve or decline recommended work.
+
+---
+
+# 14. REPAIR ORDERS
+
+Repair orders should contain:
+
+- Customer
+- Vehicle
+- VIN
+- Mileage
+- Inspection
+- Diagnostic codes
+- Diagnosis
+- Parts
+- Labor
+- Technician
+- Repair notes
+- Photos
+- Videos
+- Estimate
+- Approval
+- Invoice
+- Payment status
+
+---
+
+# 15. TECHNICIAN WORKFLOW
+
+Technicians should be able to see assigned repair orders.
+
+Technician screen should display:
+
+- Vehicle
+- Customer
+- Complaint
+- Inspection
+- Diagnostic results
+- Codes
+- Diagnosis
+- Parts
+- Repair diagrams
+- Repair instructions
+- Repair videos
+- Notes
+- Photos
+- Labor
+- Completion status
+
+---
+
+# 16. INVOICING
+
+Invoices should include:
+
+- Customer
+- Vehicle
+- VIN
+- Labor
+- Parts
+- Taxes
+- Discounts
+- Fees
+- Total
+- Payment status
+
+---
+
+# 17. PAYMENTS
+
+SERVIAUTO should support payment records and be designed so an authorized payment provider can be integrated.
+
+Payment information must never be stored insecurely in the application.
+
+---
+
+# 18. CUSTOMER FOLLOW-UP
+
+The system should support:
+
+- Completed repair notifications
+- Service reminders
+- Follow-up messages
+- Maintenance reminders
+- Customer history
+
+---
+
+# 19. BUSINESS REPORTS
+
+Reports should include:
+
+- Daily sales
+- Weekly sales
+- Monthly sales
+- Labor revenue
+- Parts revenue
+- Diagnostic revenue
+- Completed repairs
+- Open repair orders
+- Customer count
+- Vehicle count
+- Technician activity
+- Outstanding invoices
+- Payment history
+
+---
+
+# SUPABASE BACKEND
+
+Supabase is the primary cloud backend.
+
+Use:
+
+- PostgreSQL
+- Authentication
+- Row Level Security
+- Storage
+- Realtime
+- Edge Functions
+- API access
+
+SERVIAUTO must NOT use browser localStorage as the primary database.
+
+All important business information must be stored in Supabase.
+
+---
+
+# AUTHENTICATION
+
+Support:
+
+- Email sign up
+- Email sign in
+- Password reset
+- Password change
+- Google authentication
+- Sign out
+
+---
+
+# DATABASE STRUCTURE
+
+Primary tables should include:
+
+- shops
+- profiles
+- customers
+- vehicles
+- vehicle_photos
+- inspections
+- inspection_items
+- diagnostic_scans
+- diagnostic_codes
+- diagnoses
+- repair_procedures
+- repair_steps
+- repair_diagrams
+- repair_videos
+- parts
+- inventory
+- estimates
+- estimate_items
+- repair_orders
+- repair_order_items
+- technicians
+- invoices
+- payments
+- customer_followups
+- audit_logs
+
+---
+
+# SECURITY
+
+SERVIAUTO must use Supabase Row Level Security.
+
+A shop must only be able to access its own:
+
+- Customers
+- Vehicles
+- Inspections
+- Diagnostics
+- Parts
+- Repair orders
+- Estimates
+- Invoices
+- Payments
+- Reports
+
+Never expose:
+
+- Supabase service-role keys
+- API secrets
+- Passwords
+- OAuth secrets
+- Supplier credentials
+
+Secrets must be stored in secure environment variables or secret-management systems.
+
+---
+
+# INTEGRATIONS
+
+## TOPDON
+
+Integration target:
+
+TOPDON ArtiDiag900
+
+Use only officially supported integration methods.
+
+---
+
+## PARTS SUPPLIERS
+
+Support authorized integrations for supplier catalogs.
+
+Potential future integrations:
+
+- AutoZone
+- PartsTech
+- Other authorized automotive suppliers
+
+AutoZone integration must not be assumed available unless AutoZone provides an authorized API or integration.
+
+---
+
+# APPLICATION ARCHITECTURE
+
+Frontend:
+
+- Mobile-first
+- Responsive
+- Technician-friendly
+- Customer-friendly
+- Desktop compatible
+
+Backend:
+
+- Supabase
+- PostgreSQL
+- Authentication
+- Storage
+- Realtime
+- Edge Functions
+- Row Level Security
+
+Source control:
+
+- GitHub
+
+---
+
+# DEVELOPMENT PHASES
+
+## PHASE 1 — FOUNDATION
+
+Build:
+
+- Authentication
+- User profiles
+- Shop profiles
+- Customer management
+- Vehicle management
+- VIN workflow
+- Dashboard
+- Supabase database
+- Security policies
+
+---
+
+## PHASE 2 — REPAIR MANAGEMENT
+
+Build:
+
+- Inspections
+- Repair orders
+- Technicians
+- Estimates
+- Customer approvals
+- Invoices
+- Payments
+- Customer history
+
+---
+
+## PHASE 3 — DIAGNOSTICS
+
+Build:
+
+- Scan intake
+- DTC storage
+- DTC lookup
+- Diagnosis workflow
+- Diagnostic search
+- TOPDON integration boundary
+
+---
+
+## PHASE 4 — TECHNICAL REPAIR INFORMATION
+
+Build:
+
+- Vehicle images
+- Repair diagrams
+- Component locations
+- Step-by-step procedures
+- Technical search
+- Repair videos
+
+---
+
+## PHASE 5 — PARTS AND BUSINESS OPERATIONS
+
+Build:
+
+- Parts catalog
+- Inventory
+- Supplier integrations
+- Labor management
+- Reports
+- Follow-up
+- Notifications
+
+---
+
+## PHASE 6 — PRODUCTION
+
+Complete:
+
+- Security testing
+- RLS testing
+- Database testing
+- Authentication testing
+- Mobile testing
+- Desktop testing
+- Error handling
+- Backups
+- Deployment
+- Performance testing
+
+---
+
+# IMPORTANT BUILD RULE
+
+SERVIAUTO must be a real cloud-backed automotive management application.
+
+Do NOT build the production system around browser localStorage.
+
+Supabase must be the source of truth for business data.
+
+All third-party automotive information must be obtained through authorized APIs, licensed data providers, or permitted sources.
+
+---
+
+# CURRENT REPOSITORY
+
+Repository:
+
+SERVIAUTO
+
+Owner:
+
+lb36-314
+
+Primary branch:
+
+main
+
+The GitHub repository is the source-control location for the SERVIAUTO application.
+
+---
+
+# PRODUCTION GOAL
+
+The final SERVIAUTO system should allow an automotive shop to:
+
+1. Create a customer.
+2. Add the customer's vehicle.
+3. Enter or scan the VIN.
+4. Display vehicle information and an available vehicle image.
+5. Perform an inspection.
+6. Import diagnostic results.
+7. Identify DTCs.
+8. Research the diagnostic problem.
+9. Identify the suspected component.
+10. Identify the replacement part.
+11. Display the vehicle/component diagram.
+12. Display step-by-step repair instructions.
+13. Search technical information.
+14. Watch relevant repair videos.
+15. Build an estimate.
+16. Obtain customer approval.
+17. Create the repair order.
+18. Assign the technician.
+19. Complete the repair.
+20. Create the invoice.
+21. Record payment.
+22. Follow up with the customer.
+23. Store the complete vehicle history.
+24. Generate business reports.
+
+SERVIAUTO is intended to become a complete automotive repair-shop operating system.
