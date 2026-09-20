@@ -40,7 +40,7 @@ return <div className="app">
 {section==="Repair Orders"&&<RepairOrders ros={openROs} customers={customers} vehicles={vehicles} onNew={()=>setShowNew(true)} onOpen={beginRO}/>}
 {section==="Diagnostics"&&<Diagnostics activeROId={activeROId}/>} 
 {section==="Inspections"&&<Simple title="Digital Inspections" icon={<ClipboardList/>} text="Create inspection checklists, measurements, photos and technician findings." action="Start inspection"/>}
-{section==="Estimates"&&<EstimateBuilder user={user} shopId={shopId} ros={ros} customers={customers} vehicles={vehicles} activeROId={activeROId}/>} {section==="Estimates"&&<ROEstimateSync shopId={shopId} activeROId={activeROId}/>} 
+{section==="Estimates"&&<EstimateBuilder user={user} shopId={shopId} ros={ros} customers={customers} vehicles={vehicles} activeROId={activeROId}/>} {section==="Estimates"&&<ROEstimateSync shopId={shopId} activeROId={activeROId}/>} {section==="Estimates"&&<EstimateApproval shopId={shopId} activeROId={activeROId}/>} 
 {section==="Invoices"&&<InvoiceCenter user={user} shopId={shopId} ros={ros} customers={customers} activeROId={activeROId}/>} {section==="Work Orders"&&<WorkOrders user={user} shopId={shopId} ros={ros} customers={customers} vehicles={vehicles}/>} {section==="Payments"&&<PaymentCenter shopId={shopId} activeROId={activeROId}/>}  
 {section==="Reports"&&<Reports ros={ros}/>}
 {section==="Customization"&&<Customization shopId={shopId}/>}
