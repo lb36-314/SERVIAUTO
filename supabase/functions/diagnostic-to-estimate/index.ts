@@ -66,16 +66,31 @@ Deno.serve(async (req: Request) => {
       estimate = created;
     }
 
+    const partNumbers = parts
+      .map((part: any) => String(part.part_number ?? "").trim())
+      .filter(Boolean);
+    const { data: catalogParts, error: catalogError } = partNumbers.length
+      ? await db.from("parts").select("id,part_number,name,price,supplier,availability").eq("shop_id", ro.shop_id).in("part_number", partNumbers)
+      : { data: [], error: null };
+    if (catalogError) throw catalogError;
+
+    const catalogByNumber = new Map((catalogParts ?? []).map((part: any) => [String(part.part_number).trim(), part]));
     const rows = parts.map((part: any) => {
+      const partNumber = String(part.part_number ?? "").trim();
+      const catalog = catalogByNumber.get(partNumber);
       const quantity = Math.max(Number(part.quantity) || 1, 1);
-      const unitPrice = Math.max(Number(part.unit_price ?? part.price) || 0, 0);
+      const requestedPrice = Number(part.unit_price ?? part.price);
+      const unitPrice = Number.isFinite(requestedPrice) && requestedPrice > 0
+        ? requestedPrice
+        : Math.max(Number(catalog?.price) || 0, 0);
       return {
         estimate_id: estimate.id,
         item_type: "part",
-        description: String(part.part_name ?? part.description ?? "Diagnostic recommended part").trim(),
-        part_number: String(part.part_number ?? "").trim() || null,
+        description: String(part.part_name ?? part.description ?? catalog?.name ?? "Diagnostic recommended part").trim(),
+        part_number: partNumber || null,
+        part_id: catalog?.id ?? null,
         quantity,
-        unit_cost: Math.max(Number(part.unit_cost) || 0, 0),
+        unit_cost: Math.max(Number(part.unit_cost ?? catalog?.price) || 0, 0),
         unit_price: unitPrice,
         labor_hours: 0,
         labor_rate: 0,
@@ -87,7 +102,7 @@ Deno.serve(async (req: Request) => {
     const { data: inserted, error: itemError } = await db
       .from("estimate_items")
       .insert(rows)
-      .select("id,description,part_number,quantity,unit_price,total");
+      .select("id,description,part_number,part_id,quantity,unit_cost,unit_price,total");
     if (itemError) throw itemError;
 
     const { data: allItems, error: allItemsError } = await db
@@ -110,6 +125,8 @@ Deno.serve(async (req: Request) => {
       estimate_id: estimate.id,
       repair_order_id: repairOrderId,
       inserted_items: inserted ?? [],
+      catalog_matches: catalogParts ?? [],
+      catalog_match_count: catalogParts?.length ?? 0,
       parts_total: partsTotal,
       labor_total: laborTotal,
       subtotal,
