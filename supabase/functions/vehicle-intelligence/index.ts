@@ -12,12 +12,16 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { ...corsHeaders, "Content-Type": "application/json" },
 });
 
+const normalizeVin = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+const isValidVin = (value: string) => value.length === 17 && !/[IOQ]/.test(value);
+const normalizeCode = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     const body = await req.json().catch(() => ({}));
-    const vin = String(body.vin ?? "").trim().toUpperCase();
+    const vin = normalizeVin(body.vin);
     const make = String(body.make ?? "").trim();
     const model = String(body.model ?? "").trim();
     const year = Number(body.year) || null;
@@ -25,10 +29,11 @@ Deno.serve(async (req: Request) => {
     const system = String(body.system ?? "").trim();
     const symptom = String(body.symptom ?? "").trim();
     const requestedCodes = Array.isArray(body.codes)
-      ? body.codes.map((x: unknown) => String(x).trim().toUpperCase()).filter(Boolean).slice(0, 30)
+      ? Array.from(new Set(body.codes.map(normalizeCode).filter(Boolean))).slice(0, 30)
       : [];
 
     if (!make || !model) return json({ error: "Vehicle make and model are required." }, 400);
+    if (vin && !isValidVin(vin)) return json({ error: "VIN must be 17 characters and may not contain I, O, or Q.", vin_valid: false }, 400);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -76,6 +81,7 @@ Deno.serve(async (req: Request) => {
 
     return json({
       vin: vin || null,
+      vin_valid: vin ? isValidVin(vin) : null,
       vehicle: { year, make, model, engine: engine || null },
       codes: requestedCodes,
       symptom: symptom || null,
