@@ -1,0 +1,70 @@
+name: Wire VIN intelligence UI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  wire-vin:
+    if: ${{ !contains(github.event.head_commit.message, '[skip-vin-wire]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wire VIN decoder into Diagnostics
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('src/App.tsx')
+          text = path.read_text()
+          old = re.search(r'async function lookup\(\)\{.*?\}\nasync function saveTopdonScan', text, re.S)
+          if not old:
+              raise SystemExit('VIN lookup function not found')
+
+          new = r'''async function lookup(){
+            if(!supabase||!vin)return;
+            setMsg("");
+            setVehicle(null);
+            const cleanVin=vin.trim().toUpperCase();
+            const {data:decoded,error:decodeError}=await supabase.functions.invoke("vin-decode",{body:{vin:cleanVin}});
+            if(decodeError||decoded?.error){setMsg(decodeError?.message||decoded?.error||"VIN decode failed.");return}
+            const d=decoded?.vehicle;
+            if(!d?.make&&!d?.model){setMsg("VIN decoded, but no usable vehicle information was returned.");return}
+            const {data:auth}=await supabase.auth.getUser();
+            const uid=auth.user?.id;
+            let sid:string|null=null;
+            if(uid){const {data:profile}=await supabase.from("profiles").select("shop_id").eq("id",uid).maybeSingle();sid=profile?.shop_id||null}
+            let saved:any=null;
+            if(sid){
+              const {data:existing}=await supabase.from("vehicles").select("id").eq("shop_id",sid).eq("vin",cleanVin).maybeSingle();
+              const payload={shop_id:sid,vin:cleanVin,year:d.year||null,make:d.make||null,model:d.model||null,trim:d.trim||null,engine:d.engine_cylinders?`${d.engine_cylinders} cyl${d.engine_displacement_l?` ${d.engine_displacement_l}L`:""}`:null,transmission:d.transmission||null,drivetrain:d.drive_type||null};
+              if(existing?.id){const {data:u}=await supabase.from("vehicles").update(payload).eq("id",existing.id).select("id,year,make,model,trim,engine,vin,mileage,image_url").single();saved=u}else{const {data:i}=await supabase.from("vehicles").insert(payload).select("id,year,make,model,trim,engine,vin,mileage,image_url").single();saved=i}
+            }
+            const vehicleData=saved||{id:"",year:d.year,make:d.make,model:d.model,trim:d.trim,engine:d.engine_cylinders?`${d.engine_cylinders} cyl${d.engine_displacement_l?` ${d.engine_displacement_l}L`:""}`:null,vin:cleanVin,mileage:0,image_url:null};
+            setVehicle(vehicleData);
+            const {data:p}=await supabase.from("repair_procedures").select("id,part_name,part_number,summary,system,make,model,year_from,year_to").or("shop_id.is.null").or(`vehicle_id.is.null,vehicle_id.eq.${vehicleData.id||"00000000-0000-0000-0000-000000000000"}`).ilike("make",d.make||"").ilike("model",d.model||"");
+            setProcedures(p||[]);
+            setMsg(saved?"VIN decoded and vehicle record saved.":"VIN decoded. Sign in with a shop profile to save the vehicle record.");
+          }
+          async function saveTopdonScan'''
+
+          patched = text[:old.start()] + new + text[old.end():]
+          if patched == text:
+              raise SystemExit('No changes made')
+          path.write_text(patched)
+
+      - name: Commit VIN wiring
+        run: |
+          git config user.name "SERVIAUTO Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add src/App.tsx
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Wire VIN decoder into Diagnostics [skip-vin-wire]"
+          git push
