@@ -15,6 +15,7 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const normalizeVin = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
 const isValidVin = (value: string) => value.length === 17 && !/[IOQ]/.test(value);
 const normalizeCode = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+const isValidDtc = (value: string) => /^[PBCU][0-9]{4}$/.test(value);
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -28,12 +29,13 @@ Deno.serve(async (req: Request) => {
     const engine = String(body.engine ?? "").trim();
     const system = String(body.system ?? "").trim();
     const symptom = String(body.symptom ?? "").trim();
-    const requestedCodes = Array.isArray(body.codes)
-      ? Array.from(new Set(body.codes.map(normalizeCode).filter(Boolean))).slice(0, 30)
-      : [];
+    const rawCodes = Array.isArray(body.codes) ? body.codes.map(normalizeCode).filter(Boolean) : [];
+    const invalidCodes = Array.from(new Set(rawCodes.filter((code) => !isValidDtc(code))));
+    const requestedCodes = Array.from(new Set(rawCodes.filter(isValidDtc))).slice(0, 30);
 
     if (!make || !model) return json({ error: "Vehicle make and model are required." }, 400);
     if (vin && !isValidVin(vin)) return json({ error: "VIN must be 17 characters and may not contain I, O, or Q.", vin_valid: false }, 400);
+    if (invalidCodes.length) return json({ error: "One or more DTCs are invalid. Use a 5-character OBD-II code such as P0420.", invalid_codes: invalidCodes, codes: requestedCodes }, 400);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -61,13 +63,13 @@ Deno.serve(async (req: Request) => {
 
     const codeMatches = requestedCodes.length
       ? procedures.filter((row: any) => {
-          const haystack = `${row.system ?? ""} ${row.part_name ?? ""} ${row.summary ?? ""}`.toUpperCase();
+          const haystack = `${row.system ?? ""} ${row.part_name ?? ""} ${row.summary ?? ""} ${row.source ?? ""}`.toUpperCase();
           return requestedCodes.some((code) => haystack.includes(code));
         })
       : [];
 
     const rankedMatches = procedures.map((row: any) => {
-      const haystack = `${row.system ?? ""} ${row.part_name ?? ""} ${row.summary ?? ""}`.toUpperCase();
+      const haystack = `${row.system ?? ""} ${row.part_name ?? ""} ${row.summary ?? ""} ${row.source ?? ""}`.toUpperCase();
       const matchedCodes = requestedCodes.filter((code) => haystack.includes(code));
       const symptomMatch = symptom && haystack.includes(symptom.toUpperCase());
       const score = (matchedCodes.length * 10) + (symptomMatch ? 5 : 0) + (row.part_number ? 1 : 0);
