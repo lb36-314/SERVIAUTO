@@ -23,6 +23,7 @@ Deno.serve(async (req: Request) => {
     const year = Number(body.year) || null;
     const engine = String(body.engine ?? "").trim();
     const system = String(body.system ?? "").trim();
+    const symptom = String(body.symptom ?? "").trim();
     const requestedCodes = Array.isArray(body.codes)
       ? body.codes.map((x: unknown) => String(x).trim().toUpperCase()).filter(Boolean).slice(0, 30)
       : [];
@@ -60,14 +61,31 @@ Deno.serve(async (req: Request) => {
         })
       : [];
 
+    const rankedMatches = procedures.map((row: any) => {
+      const haystack = `${row.system ?? ""} ${row.part_name ?? ""} ${row.summary ?? ""}`.toUpperCase();
+      const matchedCodes = requestedCodes.filter((code) => haystack.includes(code));
+      const symptomMatch = symptom && haystack.includes(symptom.toUpperCase());
+      const score = (matchedCodes.length * 10) + (symptomMatch ? 5 : 0) + (row.part_number ? 1 : 0);
+      return { ...row, matched_codes: matchedCodes, symptom_match: Boolean(symptomMatch), relevance_score: score };
+    }).filter((row: any) => row.relevance_score > 0).sort((a: any, b: any) => b.relevance_score - a.relevance_score);
+
+    const recommendedParts = rankedMatches
+      .filter((row: any) => row.part_name || row.part_number)
+      .slice(0, 20)
+      .map((row: any) => ({ part_name: row.part_name, part_number: row.part_number, system: row.system, summary: row.summary, relevance_score: row.relevance_score }));
+
     return json({
       vin: vin || null,
       vehicle: { year, make, model, engine: engine || null },
       codes: requestedCodes,
+      symptom: symptom || null,
       matches: procedures,
       code_matches: codeMatches,
+      ranked_matches: rankedMatches.slice(0, 50),
+      recommended_parts: recommendedParts,
       count: procedures.length,
       code_match_count: codeMatches.length,
+      ranked_match_count: rankedMatches.length,
     });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : "Vehicle intelligence lookup failed." }, 500);
