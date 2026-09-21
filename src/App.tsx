@@ -62,7 +62,31 @@ function AuthorizedQueue({ros,onOpen}:{ros:RO[];onOpen:(id:string)=>void}){const
 function RepairOrders(p:{ros:RO[];customers:Customer[];vehicles:Vehicle[];onNew:()=>void;onOpen:(id:string)=>void}){return <><div className="pageHead"><div><h2>Repair Orders</h2><p>Diagnosis, authorization, repair and closeout.</p></div><button className="primary" onClick={p.onNew}><Plus size={18}/>New repair order</button></div><div className="roGrid">{p.ros.map(r=>{const c=p.customers.find(x=>x.id===r.customer_id),v=p.vehicles.find(x=>x.id===r.vehicle_id);return <div className="roCard" key={r.id}><div className="roTop"><span className="pill">{r.status}</span><strong>{r.ro_number}</strong></div><h3>{v?(v.year+" "+v.make+" "+v.model):"Vehicle"}</h3><p>{c?.name||"Customer"} · {v?.mileage.toLocaleString()} mi</p><div className="roFoot"><b>{"$"+r.total.toLocaleString()}</b><button className="linkBtn" onClick={()=>p.onOpen(r.id)}>Open RO <ArrowRight size={14}/></button></div></div>})}</div></>}
 
 function Diagnostics({activeROId}:{activeROId:string|null}){const [vin,setVin]=useState(""),[code,setCode]=useState(""),[vehicle,setVehicle]=useState<any>(null),[procedures,setProcedures]=useState<any[]>([]),[selected,setSelected]=useState<any>(null),[search,setSearch]=useState(""),[scanText,setScanText]=useState(""),[scanId,setScanId]=useState(""),[scanCodes,setScanCodes]=useState<any[]>([]),[saving,setSaving]=useState(false),[msg,setMsg]=useState("");
-async function lookup(){if(!supabase||!vin)return;const {data}=await supabase.from("vehicles").select("id,year,make,model,trim,engine,vin,mileage,image_url").ilike("vin",vin.trim()).maybeSingle();setVehicle(data||null);if(data){const {data:p}=await supabase.from("repair_procedures").select("id,part_name,part_number,summary,system,make,model,year_from,year_to").or("shop_id.is.null").or("vehicle_id.is.null,vehicle_id.eq."+data.id).ilike("make",data.make).ilike("model",data.model);setProcedures(p||[])}}
+async function lookup(){
+  if(!supabase||!vin)return;
+  setMsg("");
+  setVehicle(null);
+  const cleanVin=vin.trim().toUpperCase();
+  const {data:decoded,error:decodeError}=await supabase.functions.invoke("vin-decode",{body:{vin:cleanVin}});
+  if(decodeError||decoded?.error){setMsg(decodeError?.message||decoded?.error||"VIN decode failed.");return}
+  const d=decoded?.vehicle;
+  if(!d?.make&&!d?.model){setMsg("VIN decoded, but no usable vehicle information was returned.");return}
+  const {data:auth}=await supabase.auth.getUser();
+  const uid=auth.user?.id;
+  let sid:string|null=null;
+  if(uid){const {data:profile}=await supabase.from("profiles").select("shop_id").eq("id",uid).maybeSingle();sid=profile?.shop_id||null}
+  let saved:any=null;
+  if(sid){
+    const {data:existing}=await supabase.from("vehicles").select("id").eq("shop_id",sid).eq("vin",cleanVin).maybeSingle();
+    const payload={shop_id:sid,vin:cleanVin,year:d.year||null,make:d.make||null,model:d.model||null,trim:d.trim||null,engine:d.engine_cylinders?`${d.engine_cylinders} cyl${d.engine_displacement_l?` ${d.engine_displacement_l}L`:""}`:null,transmission:d.transmission||null,drivetrain:d.drive_type||null};
+    if(existing?.id){const {data:u}=await supabase.from("vehicles").update(payload).eq("id",existing.id).select("id,year,make,model,trim,engine,vin,mileage,image_url").single();saved=u}else{const {data:i}=await supabase.from("vehicles").insert(payload).select("id,year,make,model,trim,engine,vin,mileage,image_url").single();saved=i}
+  }
+  const vehicleData=saved||{id:"",year:d.year,make:d.make,model:d.model,trim:d.trim,engine:d.engine_cylinders?`${d.engine_cylinders} cyl${d.engine_displacement_l?` ${d.engine_displacement_l}L`:""}`:null,vin:cleanVin,mileage:0,image_url:null};
+  setVehicle(vehicleData);
+  const {data:p}=await supabase.from("repair_procedures").select("id,part_name,part_number,summary,system,make,model,year_from,year_to").or("shop_id.is.null").or(`vehicle_id.is.null,vehicle_id.eq.${vehicleData.id||"00000000-0000-0000-0000-000000000000"}`).ilike("make",d.make||"").ilike("model",d.model||"");
+  setProcedures(p||[]);
+  setMsg(saved?"VIN decoded and vehicle record saved.":"VIN decoded. Sign in with a shop profile to save the vehicle record.");
+}
 async function saveTopdonScan(){if(!supabase||!scanText.trim())return;setSaving(true);setMsg("");const {data:prof}=await supabase.auth.getUser();const uid=prof.user?.id;if(!uid){alert("Sign in first.");setSaving(false);return}const {data:profile}=await supabase.from("profiles").select("shop_id").eq("id",uid).single();if(!profile?.shop_id){alert("No shop profile found.");setSaving(false);return}let parsed:any={raw_text:scanText},codes:string[]=[];try{const j=JSON.parse(scanText);parsed=j;codes=(j.codes||j.dtc||j.fault_codes||[]).map((x:any)=>typeof x==="string"?x:x.code).filter(Boolean)}catch{codes=Array.from(new Set(scanText.toUpperCase().match(/[PBCU][0-9]{4}/g)||[]))}const {data:scan,error}=await supabase.from("diagnostic_scans").insert({shop_id:profile.shop_id,vehicle_id:vehicle?.id||null,vin:vehicle?.vin||vin||null,tool_brand:"TOPDON",tool_model:"ArtiDiag900",scan_type:"full_system",started_at:new Date().toISOString(),completed_at:new Date().toISOString(),status:"imported",raw_report:parsed,repair_order_id:activeROId}).select("id").single();if(error){alert(error.message);setSaving(false);return}if(codes.length){await supabase.from("diagnostic_codes").insert(codes.map(c=>({shop_id:profile.shop_id,diagnostic_scan_id:scan.id,vehicle_id:vehicle?.id||null,code:c,system:"Unknown",description:"Imported from TOPDON scan report"})))}setScanId(scan.id);setScanCodes(codes.map(c=>({code:c})));setMsg("TOPDON scan saved. DTCs are now attached to this vehicle record.");setSaving(false)}
 const visible=procedures.filter(x=>(x.part_name+" "+x.part_number+" "+x.summary+" "+x.system).toLowerCase().includes(search.toLowerCase()));
 async function openProc(x:any){if(!supabase)return;const {data:steps}=await supabase.from("repair_steps").select("step_number,instruction,diagram_url,warning").eq("procedure_id",x.id).order("step_number");const {data:videos}=await supabase.from("repair_videos").select("title,url,provider,description").eq("procedure_id",x.id);setSelected({...x,steps:steps||[],videos:videos||[]})}
