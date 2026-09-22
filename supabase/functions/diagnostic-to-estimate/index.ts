@@ -79,10 +79,9 @@ Deno.serve(async (req: Request) => {
       const partNumber = String(part.part_number ?? "").trim();
       const catalog = catalogByNumber.get(partNumber);
       const quantity = Math.max(Number(part.quantity) || 1, 1);
-      const requestedPrice = Number(part.unit_price ?? part.price);
-      const unitPrice = Number.isFinite(requestedPrice) && requestedPrice > 0
-        ? requestedPrice
-        : Math.max(Number(catalog?.price) || 0, 0);
+      // Price is sourced from the shop catalog. Client-supplied prices are ignored
+      // so a diagnostic request cannot tamper with estimate pricing.
+      const unitPrice = Math.max(Number(catalog?.price) || 0, 0);
       return {
         estimate_id: estimate.id,
         item_type: "part",
@@ -90,7 +89,7 @@ Deno.serve(async (req: Request) => {
         part_number: partNumber || null,
         part_id: catalog?.id ?? null,
         quantity,
-        unit_cost: Math.max(Number(part.unit_cost ?? catalog?.price) || 0, 0),
+        unit_cost: unitPrice,
         unit_price: unitPrice,
         labor_hours: 0,
         labor_rate: 0,
