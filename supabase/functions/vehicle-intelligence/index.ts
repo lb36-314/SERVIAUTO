@@ -88,6 +88,7 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({}));
     const vin = normalizeVin(body.vin);
+    const vehicleId = String(body.vehicle_id ?? "").trim();
     const make = String(body.make ?? "").trim();
     const model = String(body.model ?? "").trim();
     const year = Number(body.year) || null;
@@ -114,10 +115,40 @@ Deno.serve(async (req: Request) => {
       if (vinDecode.model_year && year && Number(vinDecode.model_year) !== year) vinWarnings.push(`VIN decoder model year (${vinDecode.model_year}) differs from supplied year (${year}).`);
     }
     if (vinModelYear?.requires_decoder) vinWarnings.push(`VIN model-year code ${vinModelYear.code} has a 30-year cycle; an authoritative decoder is required to resolve the exact model year.`);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase service configuration is missing.");
     const db = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+    let vinPersistence: { attempted: boolean; persisted: boolean; error?: string } = { attempted: false, persisted: false };
+
+    if (vehicleId && vin) {
+      vinPersistence.attempted = true;
+      const authorization = req.headers.get("Authorization") ?? "";
+      const token = authorization.startsWith("Bearer ") ? authorization.slice(7) : "";
+      if (!token) return json({ error: "Authorization is required when vehicle_id is supplied." }, 401);
+      const { data: authData, error: authError } = await db.auth.getUser(token);
+      if (authError || !authData.user) return json({ error: "Authenticated user could not be verified." }, 401);
+
+      const { data: profile, error: profileError } = await db.from("profiles").select("shop_id,active").eq("id", authData.user.id).maybeSingle();
+      if (profileError) throw profileError;
+      if (!profile?.active || !profile.shop_id) return json({ error: "Active shop membership is required to persist VIN verification." }, 403);
+
+      const { data: vehicle, error: vehicleError } = await db.from("vehicles").select("id,shop_id").eq("id", vehicleId).eq("shop_id", profile.shop_id).maybeSingle();
+      if (vehicleError) throw vehicleError;
+      if (!vehicle) return json({ error: "Vehicle was not found in the authenticated user's shop." }, 404);
+
+      const { error: updateError } = await db.from("vehicles").update({
+        vin_verified_at: new Date().toISOString(),
+        vin_decoder_source: vinDecode?.source ?? null,
+        vin_decoded: vinDecode,
+        vin_warnings: vinWarnings,
+        updated_at: new Date().toISOString(),
+      }).eq("id", vehicleId).eq("shop_id", profile.shop_id);
+      if (updateError) throw updateError;
+      vinPersistence.persisted = true;
+    }
+
     let query = db.from("repair_procedures").select("id,year_from,year_to,make,model,engine,system,part_name,part_number,summary,source").ilike("make", make).ilike("model", model).limit(100);
     if (year) query = query.or(`year_from.is.null,year_from.lte.${year}`);
     if (system) query = query.ilike("system", `%${system}%`);
@@ -142,6 +173,6 @@ Deno.serve(async (req: Request) => {
     }).filter((row: any) => row.relevance_score > 0).sort((a: any, b: any) => b.relevance_score - a.relevance_score);
     const codeMatches = requestedCodes.length ? rankedMatches.filter((row: any) => row.matched_codes.length > 0) : [];
     const recommendedParts = rankedMatches.filter((row: any) => row.part_name || row.part_number).slice(0, 20).map((row: any) => ({ part_name: row.part_name, part_number: row.part_number, system: row.system, summary: row.summary, relevance_score: row.relevance_score, confidence: row.confidence, match_reasons: row.match_reasons }));
-    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_model_year: vinModelYear, vin_decode: vinDecode, vin_warnings: vinWarnings, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
+    return json({ vehicle_id: vehicleId || null, vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_model_year: vinModelYear, vin_decode: vinDecode, vin_warnings: vinWarnings, vin_persistence: vinPersistence, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
   } catch (error) { return json({ error: error instanceof Error ? error.message : "Vehicle intelligence lookup failed." }, 500); }
 });
