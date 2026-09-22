@@ -36,6 +36,24 @@ const getVinSegments = (vin: string) => vin.length === 17 ? {
   vis: vin.slice(11),
   serial_number: vin.slice(11),
 } : null;
+const getModelYearCandidates = (vin: string, decodedYear: string | null) => {
+  if (vin.length !== 17) return null;
+  const code = vin[9];
+  const yearMap: Record<string, number> = {
+    A: 1980, B: 1981, C: 1982, D: 1983, E: 1984, F: 1985, G: 1986, H: 1987, J: 1988, K: 1989, L: 1990, M: 1991, N: 1992, P: 1993, R: 1994, S: 1995, T: 1996, V: 1997, W: 1998, X: 1999, Y: 2000,
+    1: 2001, 2: 2002, 3: 2003, 4: 2004, 5: 2005, 6: 2006, 7: 2007, 8: 2008, 9: 2009,
+  };
+  const base = yearMap[code];
+  if (!base) return null;
+  const candidates = [base, base + 30];
+  const decoded = decodedYear ? Number(decodedYear) : null;
+  return {
+    code,
+    candidates,
+    resolved_year: decoded && candidates.includes(decoded) ? decoded : null,
+    requires_decoder: !decoded || !candidates.includes(decoded),
+  };
+};
 const normalizeCode = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
 const isValidDtc = (value: string) => /^[PBCU][0-9]{4}$/.test(value);
 
@@ -86,12 +104,14 @@ Deno.serve(async (req: Request) => {
     const vinCheckValid = vin ? hasValidVinCheckDigit(vin) : null;
     const vinSegments = vin ? getVinSegments(vin) : null;
     const vinDecode = vin && vinCheckValid ? await decodeVinWithVpic(vin) : null;
+    const vinModelYear = vin ? getModelYearCandidates(vin, vinDecode?.model_year ?? null) : null;
     const vinWarnings: string[] = [];
     if (vinDecode) {
       if (vinDecode.make && make && vinDecode.make.toUpperCase() !== make.toUpperCase()) vinWarnings.push(`VIN decoder make (${vinDecode.make}) differs from supplied make (${make}).`);
       if (vinDecode.model && model && vinDecode.model.toUpperCase() !== model.toUpperCase()) vinWarnings.push(`VIN decoder model (${vinDecode.model}) differs from supplied model (${model}).`);
       if (vinDecode.model_year && year && Number(vinDecode.model_year) !== year) vinWarnings.push(`VIN decoder model year (${vinDecode.model_year}) differs from supplied year (${year}).`);
     }
+    if (vinModelYear?.requires_decoder) vinWarnings.push(`VIN model-year code ${vinModelYear.code} has a 30-year cycle; an authoritative decoder is required to resolve the exact model year.`);
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase service configuration is missing.");
@@ -120,6 +140,6 @@ Deno.serve(async (req: Request) => {
     }).filter((row: any) => row.relevance_score > 0).sort((a: any, b: any) => b.relevance_score - a.relevance_score);
     const codeMatches = requestedCodes.length ? rankedMatches.filter((row: any) => row.matched_codes.length > 0) : [];
     const recommendedParts = rankedMatches.filter((row: any) => row.part_name || row.part_number).slice(0, 20).map((row: any) => ({ part_name: row.part_name, part_number: row.part_number, system: row.system, summary: row.summary, relevance_score: row.relevance_score, confidence: row.confidence, match_reasons: row.match_reasons }));
-    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_decode: vinDecode, vin_warnings: vinWarnings, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
+    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_model_year: vinModelYear, vin_decode: vinDecode, vin_warnings: vinWarnings, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
   } catch (error) { return json({ error: error instanceof Error ? error.message : "Vehicle intelligence lookup failed." }, 500); }
 });
