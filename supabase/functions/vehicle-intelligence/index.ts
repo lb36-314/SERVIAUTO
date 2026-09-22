@@ -106,6 +106,8 @@ Deno.serve(async (req: Request) => {
     const vinDecode = vin && vinCheckValid ? await decodeVinWithVpic(vin) : null;
     const vinModelYear = vin ? getModelYearCandidates(vin, vinDecode?.model_year ?? null) : null;
     const vinWarnings: string[] = [];
+    if (vin && vinCheckValid === false) vinWarnings.push("VIN failed the standard check-digit validation; authoritative VIN decoding was skipped.");
+    if (vin && vinCheckValid === true && !vinDecode) vinWarnings.push("VIN passed structural and check-digit validation, but NHTSA vPIC decoding was unavailable; vehicle identity remains unverified by the external decoder.");
     if (vinDecode) {
       if (vinDecode.make && make && vinDecode.make.toUpperCase() !== make.toUpperCase()) vinWarnings.push(`VIN decoder make (${vinDecode.make}) differs from supplied make (${make}).`);
       if (vinDecode.model && model && vinDecode.model.toUpperCase() !== model.toUpperCase()) vinWarnings.push(`VIN decoder model (${vinDecode.model}) differs from supplied model (${model}).`);
