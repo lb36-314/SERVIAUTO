@@ -30,6 +30,32 @@ const hasValidVinCheckDigit = (vin: string) => {
 const normalizeCode = (value: unknown) => String(value ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
 const isValidDtc = (value: string) => /^[PBCU][0-9]{4}$/.test(value);
 
+const decodeVinWithVpic = async (vin: string) => {
+  try {
+    const response = await fetch(`https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/${encodeURIComponent(vin)}?format=json`);
+    if (!response.ok) return null;
+    const payload = await response.json();
+    const result = payload?.Results?.[0];
+    if (!result) return null;
+    const value = (key: string) => String(result[key] ?? "").trim();
+    return {
+      source: "NHTSA vPIC",
+      make: value("Make") || null,
+      model: value("Model") || null,
+      model_year: value("ModelYear") || null,
+      trim: value("Trim") || null,
+      series: value("Series") || null,
+      engine: value("EngineModel") || value("EngineCylinders") || null,
+      body_class: value("BodyClass") || null,
+      drive_type: value("DriveType") || null,
+      plant_country: value("PlantCountry") || null,
+      manufacturer: value("Manufacturer") || null,
+    };
+  } catch {
+    return null;
+  }
+};
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
@@ -49,6 +75,7 @@ Deno.serve(async (req: Request) => {
     if (invalidCodes.length) return json({ error: "One or more DTCs are invalid. Use a 5-character OBD-II code such as P0420.", invalid_codes: invalidCodes, codes: requestedCodes }, 400);
 
     const vinCheckValid = vin ? hasValidVinCheckDigit(vin) : null;
+    const vinDecode = vin && vinCheckValid ? await decodeVinWithVpic(vin) : null;
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase service configuration is missing.");
@@ -77,6 +104,6 @@ Deno.serve(async (req: Request) => {
     }).filter((row: any) => row.relevance_score > 0).sort((a: any, b: any) => b.relevance_score - a.relevance_score);
     const codeMatches = requestedCodes.length ? rankedMatches.filter((row: any) => row.matched_codes.length > 0) : [];
     const recommendedParts = rankedMatches.filter((row: any) => row.part_name || row.part_number).slice(0, 20).map((row: any) => ({ part_name: row.part_name, part_number: row.part_number, system: row.system, summary: row.summary, relevance_score: row.relevance_score, confidence: row.confidence, match_reasons: row.match_reasons }));
-    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
+    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_decode: vinDecode, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
   } catch (error) { return json({ error: error instanceof Error ? error.message : "Vehicle intelligence lookup failed." }, 500); }
 });
