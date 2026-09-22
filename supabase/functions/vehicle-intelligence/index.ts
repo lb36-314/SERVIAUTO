@@ -86,6 +86,12 @@ Deno.serve(async (req: Request) => {
     const vinCheckValid = vin ? hasValidVinCheckDigit(vin) : null;
     const vinSegments = vin ? getVinSegments(vin) : null;
     const vinDecode = vin && vinCheckValid ? await decodeVinWithVpic(vin) : null;
+    const vinWarnings: string[] = [];
+    if (vinDecode) {
+      if (vinDecode.make && make && vinDecode.make.toUpperCase() !== make.toUpperCase()) vinWarnings.push(`VIN decoder make (${vinDecode.make}) differs from supplied make (${make}).`);
+      if (vinDecode.model && model && vinDecode.model.toUpperCase() !== model.toUpperCase()) vinWarnings.push(`VIN decoder model (${vinDecode.model}) differs from supplied model (${model}).`);
+      if (vinDecode.model_year && year && Number(vinDecode.model_year) !== year) vinWarnings.push(`VIN decoder model year (${vinDecode.model_year}) differs from supplied year (${year}).`);
+    }
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase service configuration is missing.");
@@ -114,6 +120,6 @@ Deno.serve(async (req: Request) => {
     }).filter((row: any) => row.relevance_score > 0).sort((a: any, b: any) => b.relevance_score - a.relevance_score);
     const codeMatches = requestedCodes.length ? rankedMatches.filter((row: any) => row.matched_codes.length > 0) : [];
     const recommendedParts = rankedMatches.filter((row: any) => row.part_name || row.part_number).slice(0, 20).map((row: any) => ({ part_name: row.part_name, part_number: row.part_number, system: row.system, summary: row.summary, relevance_score: row.relevance_score, confidence: row.confidence, match_reasons: row.match_reasons }));
-    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_decode: vinDecode, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
+    return json({ vin: vin || null, vin_valid: vin ? isValidVin(vin) : null, vin_check_digit_valid: vinCheckValid, vin_segments: vinSegments, vin_decode: vinDecode, vin_warnings: vinWarnings, vehicle: { year, make, model, engine: engine || null }, codes: requestedCodes, symptom: symptom || null, matches: procedures, code_matches: codeMatches, ranked_matches: rankedMatches.slice(0, 50), recommended_parts: recommendedParts, count: procedures.length, code_match_count: codeMatches.length, ranked_match_count: rankedMatches.length });
   } catch (error) { return json({ error: error instanceof Error ? error.message : "Vehicle intelligence lookup failed." }, 500); }
 });
