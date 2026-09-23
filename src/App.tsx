@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase, supabaseConfigured } from "./lib/supabase";
+import CustomerPortal from "./CustomerPortal";
 import { Activity, ArrowRight, BarChart3, Bell, Car, CheckCircle2, ClipboardList, DollarSign, FileText, Gauge, Menu, Plus, Search, Settings, ShieldCheck, Stethoscope, UserRound, Users, Wrench, X, CreditCard, Palette, Image as ImageIcon } from "lucide-react";
 
 type Customer={id:string;name:string;phone:string;email:string};
@@ -17,6 +18,7 @@ const demoROs:RO[]=[
 {id:"r2",ro_number:"RO-1000",status:"Awaiting Approval",customer_id:"c2",vehicle_id:"v2",total:720}];
 
 export default function App(){
+if(window.location.hash.startsWith("#customer")) return <CustomerPortal/>;
 const [section,setSection]=useState("Dashboard"),[customers,setCustomers]=useState(demoCustomers),[vehicles,setVehicles]=useState(demoVehicles),[ros,setRos]=useState(demoROs),[query,setQuery]=useState(""),[showNew,setShowNew]=useState(false),[showAuth,setShowAuth]=useState(false),[menuOpen,setMenuOpen]=useState(false),[user,setUser]=useState<any>(null),[shopId,setShopId]=useState<string|null>(null),[activeROId,setActiveROId]=useState<string|null>(null);
 useEffect(()=>{if(!supabase)return;supabase.auth.getSession().then(({data})=>setUser(data.session?.user??null));const x=supabase.auth.onAuthStateChange((_e,s)=>setUser(s?.user??null));return()=>x.data.subscription.unsubscribe()},[]);
 useEffect(()=>{if(!supabase||!user)return;const load=async()=>{const {data:profile}=await supabase.from("profiles").select("shop_id").eq("id",user.id).maybeSingle();const sid=profile?.shop_id??null;setShopId(sid);if(!sid)return;const [c,v,r]=await Promise.all([supabase.from("customers").select("id,first_name,last_name,phone,email,created_at").eq("shop_id",sid).order("created_at",{ascending:false}).limit(100),supabase.from("vehicles").select("id,customer_id,year,make,model,vin,mileage").eq("shop_id",sid).order("created_at",{ascending:false}).limit(100),supabase.from("repair_orders").select("id,ro_number,status,customer_id,vehicle_id").eq("shop_id",sid).order("created_at",{ascending:false}).limit(100)]);if(c.data)setCustomers(c.data.map((x:any)=>({id:x.id,name:[x.first_name,x.last_name].filter(Boolean).join(" ")||"Unnamed customer",phone:x.phone||"",email:x.email||""})));if(v.data)setVehicles(v.data as Vehicle[]);if(r.data)setRos(r.data.map((x:any)=>({...x,total:0})) as RO[])};load()},[user]);
