@@ -21,10 +21,11 @@ jobs:
       VITE_SUPABASE_URL: https://ilzkatejkirhfzeyqipk.supabase.co
       VITE_SUPABASE_PUBLISHABLE_KEY: sb_publishable_J9VmyPqWsvm-9VjcfSAgyg__6ksDzFw
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
+          package-manager-cache: false
       - run: npm install --no-audit --no-fund
       - run: npm run typecheck
       - run: npm run build
