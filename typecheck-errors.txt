@@ -2,5 +2,4 @@
 > serviauto@1.0.0 typecheck
 > tsc -b --pretty false
 
-src/App.tsx(59,606): error TS18047: 'ro' is possibly 'null'.
-EXIT_CODE=2
+EXIT_CODE=0
