@@ -17,13 +17,17 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const repairOrderId = String(body.repair_order_id ?? "").trim();
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) return json({ error: "Authentication required." }, 401);
     const parts = Array.isArray(body.parts) ? body.parts.slice(0, 30) : [];
 
     if (!repairOrderId) return json({ error: "repair_order_id is required." }, 400);
     if (!parts.length) return json({ error: "At least one diagnostic part is required." }, 400);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const userClient = createClient(supabaseUrl!, Deno.env.get("SUPABASE_ANON_KEY") || "", { global: { headers: { Authorization: authHeader } } });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) return json({ error: "Authenticated user could not be verified." }, 401);
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) throw new Error("Supabase service configuration is missing.");
 
@@ -36,6 +40,9 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     if (roError) throw roError;
     if (!ro) return json({ error: "Repair order not found." }, 404);
+    const { data: profile, error: profileError } = await db.from("profiles").select("shop_id,active").eq("id", user.id).maybeSingle();
+    if (profileError) throw profileError;
+    if (!profile?.active || profile.shop_id !== ro.shop_id) return json({ error: "You are not authorized for this repair order." }, 403);
 
     let { data: estimate, error: estimateError } = await db
       .from("estimates")
