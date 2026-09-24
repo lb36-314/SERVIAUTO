@@ -29,3 +29,6 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: TypeScript validation
+        run: npm run typecheck
