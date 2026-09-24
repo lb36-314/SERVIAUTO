@@ -1,0 +1,5 @@
+
+> serviauto@1.0.0 typecheck
+> tsc -b --pretty false
+
+EXIT_CODE=0
