@@ -2,16 +2,5 @@
 > serviauto@1.0.0 typecheck
 > tsc -b --pretty false
 
-src/App.tsx(24,64): error TS7031: Binding element 'data' implicitly has an 'any' type.
-src/App.tsx(24,142): error TS7006: Parameter '_e' implicitly has an 'any' type.
-src/App.tsx(24,145): error TS7006: Parameter 's' implicitly has an 'any' type.
 src/App.tsx(59,594): error TS18047: 'p.activeRO' is possibly 'null'.
-src/App.tsx(61,666): error TS18047: 'ro' is possibly 'null'.
-src/App.tsx(61,956): error TS18047: 'ro' is possibly 'null'.
-src/App.tsx(71,820): error TS7006: Parameter 'x' implicitly has an 'any' type.
-src/CustomerPortal.tsx(5,69): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
-src/CustomerPortal.tsx(6,109): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
-src/lib/supabase.ts(4,25): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
-src/lib/supabase.ts(5,37): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
-src/lib/supabase.ts(5,86): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
 EXIT_CODE=2
