@@ -2,86 +2,13 @@
 > serviauto@1.0.0 typecheck
 > tsc -b --pretty false
 
-src/App.tsx(24,91): error TS18047: 'supabase' is possibly 'null'.
-src/App.tsx(24,262): error TS18047: 'supabase' is possibly 'null'.
-src/App.tsx(24,413): error TS18047: 'supabase' is possibly 'null'.
-src/App.tsx(24,559): error TS18047: 'supabase' is possibly 'null'.
-src/App.tsx(49,83): error TS7006: Parameter 's' implicitly has an 'any' type.
-src/App.tsx(58,538): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"final_inspections"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"final_inspections"' is not assignable to parameter of type 'never'.
-src/App.tsx(58,567): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(58,584): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(58,600): error TS18047: 'p.activeRO' is possibly 'null'.
-src/App.tsx(58,614): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(58,659): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(58,665): error TS2322: Type 'string | null' is not assignable to type 'never'.
-  Type 'null' is not assignable to type 'never'.
-src/App.tsx(58,717): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(60,666): error TS18047: 'activeRO' is possibly 'null'.
-src/App.tsx(60,968): error TS18047: 'activeRO' is possibly 'null'.
-src/App.tsx(67,1665): error TS2345: Argument of type '{ shop_id: string; vin: string; year: any; make: any; model: any; trim: any; engine: string | null; transmission: any; drivetrain: any; }' is not assignable to parameter of type 'RejectExcessProperties<{ created_at?: string | undefined; customer_id: string; drivetrain?: string | null | undefined; engine?: string | null | undefined; id?: string | undefined; license_plate?: string | null | undefined; ... 9 more ...; year?: number | ... 1 more ... | undefined; }, { ...; }> | RejectExcessPropert...'.
-  Type '{ shop_id: string; vin: string; year: any; make: any; model: any; trim: any; engine: string | null; transmission: any; drivetrain: any; }' is not assignable to type 'RejectExcessProperties<{ created_at?: string | undefined; customer_id: string; drivetrain?: string | null | undefined; engine?: string | null | undefined; id?: string | undefined; license_plate?: string | null | undefined; ... 9 more ...; year?: number | ... 1 more ... | undefined; }, { ...; }>'.
-    Property 'customer_id' is missing in type '{ shop_id: string; vin: string; year: any; make: any; model: any; trim: any; engine: string | null; transmission: any; drivetrain: any; }' but required in type '{ created_at?: string | undefined; customer_id: string; drivetrain?: string | null | undefined; engine?: string | null | undefined; id?: string | undefined; license_plate?: string | null | undefined; ... 9 more ...; year?: number | ... 1 more ... | undefined; }'.
-src/App.tsx(67,2365): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"repair_procedures"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"repair_procedures"' is not assignable to parameter of type 'never'.
-src/App.tsx(68,1121): error TS2322: Type 'string | null' is not assignable to type 'string'.
-  Type 'null' is not assignable to type 'string'.
-src/App.tsx(68,1315): error TS2345: Argument of type '{ shop_id: string | null; diagnostic_scan_id: string; vehicle_id: any; code: string; system: string; description: string; }[]' is not assignable to parameter of type 'RejectExcessProperties<{ code: string; created_at?: string | undefined; description?: string | null | undefined; diagnosis?: string | null | undefined; diagnostic_scan_id?: string | null | undefined; ... 8 more ...; vehicle_id?: string | ... 1 more ... | undefined; }, { ...; }> | RejectExcessProperties<...>[]'.
-  Type '{ shop_id: string | null; diagnostic_scan_id: string; vehicle_id: any; code: string; system: string; description: string; }[]' is not assignable to type 'RejectExcessProperties<{ code: string; created_at?: string | undefined; description?: string | null | undefined; diagnosis?: string | null | undefined; diagnostic_scan_id?: string | null | undefined; freeze_frame_data?: Json | undefined; ... 7 more ...; vehicle_id?: string | ... 1 more ... | undefined; }, { ...; }>[]'.
-    Type '{ shop_id: string | null; diagnostic_scan_id: string; vehicle_id: any; code: string; system: string; description: string; }' is not assignable to type 'RejectExcessProperties<{ code: string; created_at?: string | undefined; description?: string | null | undefined; diagnosis?: string | null | undefined; diagnostic_scan_id?: string | null | undefined; freeze_frame_data?: Json | undefined; ... 7 more ...; vehicle_id?: string | ... 1 more ... | undefined; }, { ...; }>'.
-      Property 'repair_order_id' is missing in type '{ shop_id: string | null; diagnostic_scan_id: string; vehicle_id: any; code: string; system: string; description: string; }' but required in type '{ code: string; created_at?: string | undefined; description?: string | null | undefined; diagnosis?: string | null | undefined; diagnostic_scan_id?: string | null | undefined; freeze_frame_data?: Json | undefined; ... 7 more ...; vehicle_id?: string | ... 1 more ... | undefined; }'.
-src/App.tsx(69,231): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"repair_steps"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"repair_steps"' is not assignable to parameter of type 'never'.
-src/App.tsx(69,304): error TS2345: Argument of type '"procedure_id"' is not assignable to parameter of type '"id"'.
-src/App.tsx(69,386): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"repair_videos"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"repair_videos"' is not assignable to parameter of type 'never'.
-src/App.tsx(69,447): error TS2345: Argument of type '"procedure_id"' is not assignable to parameter of type '"id"'.
-src/App.tsx(70,287): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type 'never'.
-src/App.tsx(70,420): error TS2345: Argument of type '"active"' is not assignable to parameter of type '"id"'.
-src/App.tsx(70,1188): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type 'never'.
-src/App.tsx(70,1222): error TS2345: Argument of type '"shop_id"' is not assignable to parameter of type '"id"'.
-src/App.tsx(70,1243): error TS2345: Argument of type '"service_code"' is not assignable to parameter of type '"id"'.
-src/App.tsx(70,1344): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type 'never'.
-src/App.tsx(70,1370): error TS2322: Type 'number' is not assignable to type 'never'.
-src/App.tsx(70,1391): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(70,1485): error TS2769: No overload matches this call.
-  Overload 1 of 2, '(relation: "profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"): PostgrestQueryBuilder<...>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type '"profiles" | "customers" | "shops" | "vehicles" | "diagnostic_codes" | "repair_orders" | "diagnostic_scans" | "estimates" | "inspections" | "vendors" | "invoices" | "parts" | ... 14 more ... | "repair_order_items"'.
-  Overload 2 of 2, '(relation: never): PostgrestQueryBuilder<{ PostgrestVersion: "14.5"; }, { Tables: { appointments: { Row: { appointment_date: string; assigned_advisor: string | null; created_at: string; customer_id: string | null; ... 8 more ...; vehicle_id: string | null; }; Insert: { ...; }; Update: { ...; }; Relationships: [...]; }; ... 25 more ...; vendors: { ...; }; }; Views: {}; Functions: { ...; }; Enums: {}; CompositeTypes: {}; }, never, never, never>', gave the following error.
-    Argument of type '"service_prices"' is not assignable to parameter of type 'never'.
-src/App.tsx(70,1511): error TS2322: Type 'string' is not assignable to type 'never'.
-src/App.tsx(70,1526): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1554): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1582): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1602): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1630): error TS2322: Type 'number' is not assignable to type 'never'.
-src/App.tsx(70,1651): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1683): error TS2322: Type 'any' is not assignable to type 'never'.
-src/App.tsx(70,1697): error TS2322: Type 'true' is not assignable to type 'never'.
+src/App.tsx(24,64): error TS7031: Binding element 'data' implicitly has an 'any' type.
+src/App.tsx(24,142): error TS7006: Parameter '_e' implicitly has an 'any' type.
+src/App.tsx(24,145): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/App.tsx(59,594): error TS18047: 'p.activeRO' is possibly 'null'.
+src/App.tsx(61,666): error TS18047: 'ro' is possibly 'null'.
+src/App.tsx(61,956): error TS18047: 'ro' is possibly 'null'.
+src/App.tsx(71,820): error TS7006: Parameter 'x' implicitly has an 'any' type.
 src/CustomerPortal.tsx(5,69): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
 src/CustomerPortal.tsx(6,109): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
 src/lib/supabase.ts(4,25): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
