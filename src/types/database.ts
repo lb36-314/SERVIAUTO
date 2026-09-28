@@ -1729,28 +1729,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      bootstrap_shop:
-        | {
-            Args: {
-              address?: string
-              business_name: string
-              city?: string
-              email?: string
-              phone?: string
-              state?: string
-              zip?: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_business_name: string
-              p_email?: string
-              p_full_name?: string
-              p_phone?: string
-            }
-            Returns: string
-          }
+      bootstrap_shop: {
+        Args: {
+          address?: string
+          business_name: string
+          city?: string
+          email?: string
+          phone?: string
+          state?: string
+          zip?: string
+        }
+        Returns: string
+      }
       current_role: { Args: never; Returns: string }
       current_shop_id: { Args: never; Returns: string }
       is_shop_member: { Args: { target_shop_id: string }; Returns: boolean }
